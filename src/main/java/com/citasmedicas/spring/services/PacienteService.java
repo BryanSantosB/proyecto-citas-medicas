@@ -8,12 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.citasmedicas.spring.dto.AuthCreatePacienteDetailsRequest;
 import com.citasmedicas.spring.dto.AuthCreatePacienteRequest;
-import com.citasmedicas.spring.dto.AuthCreateRoleRequest;
 import com.citasmedicas.spring.dto.AuthCreateUserRequest;
 import com.citasmedicas.spring.dto.AuthResponse;
+import com.citasmedicas.spring.dto.PacienteDTO;
+import com.citasmedicas.spring.dto.mappers.PacienteMapper;
 import com.citasmedicas.spring.entities.PacienteEntity;
 import com.citasmedicas.spring.entities.UserEntity;
-import com.citasmedicas.spring.exceptions.BadRequestException;
 import com.citasmedicas.spring.exceptions.ResourceNotFoundException;
 import com.citasmedicas.spring.repository.PacienteRepository;
 import com.citasmedicas.spring.repository.UserRepository;
@@ -25,16 +25,27 @@ public class PacienteService {
     private PacienteRepository pacienteRepository;
 
     @Autowired
+    private PacienteMapper pacienteMapper;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private UserDetailServiceImpl userDetailServiceImpl;
 
-    public List<PacienteEntity> getAllPacientes(){
-        return pacienteRepository.findAll();
+    public List<PacienteDTO> getAllPacientes(){
+        return pacienteRepository.findAll().stream()
+                .map(pacienteMapper::toPacienteDTO)
+                .toList();
     }
 
-    public PacienteEntity getPacienteById(Long id){
+    public PacienteDTO getPacienteDtoById(Long id){
+        PacienteEntity paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado"));
+        return pacienteMapper.toPacienteDTO(paciente);
+    }
+
+    public PacienteEntity getPacienteEnityById(Long id){
         return pacienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado"));
     }
@@ -44,15 +55,13 @@ public class PacienteService {
 
         // Obtener los datos de AuthCreatePacienteRequest
         String username = authCreatePacienteRequest.userRequest().username();
-        String password = authCreatePacienteRequest.userRequest().password();
-        String correo = authCreatePacienteRequest.pacienteDetails().correoElectronico();
+        String correo = authCreatePacienteRequest.userRequest().correoElectronico();
 
         // Verificar existencia del usuario y correo
-        verificarExistenciaUsuarioCorreo(username, correo);
+        userDetailServiceImpl.verificarExistenciaUsuarioCorreo(username, correo);
 
         // Crear el usuario asociado al paciente
-        AuthCreateUserRequest userRequest = new AuthCreateUserRequest(username, password, 
-            new AuthCreateRoleRequest(List.of("PACIENTE")));
+        AuthCreateUserRequest userRequest = userDetailServiceImpl.asignarRolUserRequest(authCreatePacienteRequest.userRequest(), "PACIENTE");
         AuthResponse userResponse = userDetailServiceImpl.createUser(userRequest);
 
         // Crear el paciente y asociarlo al usuario
@@ -68,19 +77,17 @@ public class PacienteService {
     }
 
     @Transactional
-    public PacienteEntity updatePaciente(Long id, AuthCreatePacienteDetailsRequest pacienteDetails){
+    public PacienteDTO updatePaciente(Long id, AuthCreatePacienteRequest pacienteRequest){
 
         PacienteEntity pacienteEntity = pacienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente con id " + id + " no encontrado."));
-        String correo = pacienteDetails.correoElectronico();
 
-        // Validar existencia única del correo
-        verificarCorreoUnico(correo, pacienteEntity);
-
+        userDetailServiceImpl.updateUsuario(pacienteEntity.getUsuario().getId(), pacienteRequest.userRequest());
+        
         // Actualizar los datos del paciente 
-        actualizarCamposPaciente(pacienteEntity, pacienteDetails);
+        actualizarCamposPaciente(pacienteEntity, pacienteRequest.pacienteDetails());
 
-        return pacienteRepository.save(pacienteEntity);
+        return pacienteMapper.toPacienteDTO(pacienteRepository.save(pacienteEntity));
     }
 
     @Transactional
@@ -93,54 +100,20 @@ public class PacienteService {
             throw new ResourceNotFoundException("Usuario asociado al doctor no encontrado.");
         }
 
-        pacienteRepository.delete(paciente);
-        userRepository.delete(user);
-
-        return "El paciente con id " + id + " ha sido eliminado";
-    }
-
-    public void verificarCorreoUnico(String newCorreo, PacienteEntity pacienteEntity){
-        pacienteRepository.findByCorreoElectronico(newCorreo)
-            .ifPresent(existingPaciente -> {
-                if (!existingPaciente.getId().equals(pacienteEntity.getId())) {
-                    throw new BadRequestException("El correo electrónico ya está en uso.");
-                }
-            });
+        userDetailServiceImpl.deleteUser(paciente.getUsuario().getId());
+        return "El paciente con id " + id + " ha sido deshabilidado";
     }
 
     public void actualizarCamposPaciente(PacienteEntity pacienteEntity, AuthCreatePacienteDetailsRequest pacienteDetails){
-        pacienteEntity.setNombres(pacienteDetails.nombres());
-        pacienteEntity.setApellidos(pacienteDetails.apellidos());
-        pacienteEntity.setCorreoElectronico(pacienteDetails.correoElectronico());
-        pacienteEntity.setFechaNacimiento(pacienteDetails.fechaNacimiento());
-        pacienteEntity.setGenero(pacienteDetails.genero());
-        pacienteEntity.setTelefonoContacto(pacienteDetails.telefonoContacto());
-        pacienteEntity.setDireccion(pacienteDetails.direccion());
         pacienteEntity.setGrupoSanguineo(pacienteDetails.grupoSanguineo());
         pacienteEntity.setAlergias(pacienteDetails.alergias());
         pacienteEntity.setEnfermedadesCronicas(pacienteDetails.enfermedadesCronicas());
         pacienteEntity.setNumeroHistoriaClinica(pacienteDetails.numeroHistoriaClinica());
         pacienteEntity.setInformacionAdicional(pacienteDetails.informacionAdicional());
     }
-    
-    public void verificarExistenciaUsuarioCorreo(String username, String correo){
-        if(userRepository.existsByUsername(username)){
-            throw new BadRequestException("El nombre de usuario ya existe.");
-        }
-        if(pacienteRepository.existsByCorreoElectronico(correo)){
-            throw new BadRequestException("El correo electrónico ya está en uso.");
-        }
-    }
 
     public PacienteEntity mapToPaciente(AuthCreatePacienteDetailsRequest pecienteDetails){
         return PacienteEntity.builder()
-        .nombres(pecienteDetails.nombres())
-        .apellidos(pecienteDetails.apellidos())
-        .correoElectronico(pecienteDetails.correoElectronico())
-        .fechaNacimiento(pecienteDetails.fechaNacimiento())
-        .genero(pecienteDetails.genero())
-        .telefonoContacto(pecienteDetails.telefonoContacto())
-        .direccion(pecienteDetails.direccion())
         .grupoSanguineo(pecienteDetails.grupoSanguineo())
         .alergias(pecienteDetails.alergias())
         .enfermedadesCronicas(pecienteDetails.enfermedadesCronicas())

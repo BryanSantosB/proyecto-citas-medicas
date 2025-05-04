@@ -10,8 +10,4 @@ public interface PacienteRepository extends JpaRepository<PacienteEntity, Long> 
 
     Optional<PacienteEntity> findPacienteEntityById(Long id);
 
-    Optional<PacienteEntity> findByCorreoElectronico(String correoElectronico);
-
-    boolean existsByCorreoElectronico(String correo);
-
 }

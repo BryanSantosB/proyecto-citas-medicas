@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.citasmedicas.spring.dto.AuthCreatePacienteDetailsRequest;
 import com.citasmedicas.spring.dto.AuthCreatePacienteRequest;
 import com.citasmedicas.spring.dto.AuthResponse;
-import com.citasmedicas.spring.entities.PacienteEntity;
+import com.citasmedicas.spring.dto.PacienteDTO;
 import com.citasmedicas.spring.services.PacienteService;
 
 import jakarta.validation.Valid;
@@ -38,20 +37,20 @@ public class PacienteController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get")
-    public ResponseEntity<List<PacienteEntity>> getAllPacientes(){
+    public ResponseEntity<List<PacienteDTO>> getAllPacientes(){
         return new ResponseEntity<>(pacienteService.getAllPacientes(), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/getpaciente/{id}")
-    public ResponseEntity<PacienteEntity> getPacienteById(@PathVariable Long id){
-        return new ResponseEntity<>(pacienteService.getPacienteById(id), HttpStatus.OK);
+    @GetMapping("/getpaciente/{id}")
+    public ResponseEntity<PacienteDTO> getPacienteById(@PathVariable Long id){
+        return new ResponseEntity<>(pacienteService.getPacienteDtoById(id), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('PACIENTE')")
     @PutMapping("/updatepaciente/{id}")
-    public ResponseEntity<PacienteEntity> updatePaciente(@PathVariable Long id, @RequestBody @Valid AuthCreatePacienteDetailsRequest pacienteDetails){
-        return new ResponseEntity<>(pacienteService.updatePaciente(id, pacienteDetails), HttpStatus.OK);
+    public ResponseEntity<PacienteDTO> updatePaciente(@PathVariable Long id, @RequestBody @Valid AuthCreatePacienteRequest pacienteRequest){
+        return new ResponseEntity<>(pacienteService.updatePaciente(id, pacienteRequest), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

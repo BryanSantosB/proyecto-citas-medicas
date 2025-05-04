@@ -51,8 +51,7 @@ public class DoctorService {
         verificarExistenciaUsuarioCorreo(username, correo);
 
         // Crear el usuario asociado al doctor
-        AuthCreateUserRequest userRequest = new AuthCreateUserRequest(username, password, 
-            new AuthCreateRoleRequest(List.of("DOCTOR")));
+        AuthCreateUserRequest userRequest = userDetailServiceImpl.asignarRolUserRequest(authCreateDoctorRequest.userRequest(), "DOCTOR");
         AuthResponse userResponse = userDetailServiceImpl.createUser(userRequest);
 
         // Crear el doctor y asociarlo al usuario

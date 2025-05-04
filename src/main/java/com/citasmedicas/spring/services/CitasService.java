@@ -40,7 +40,7 @@ public class CitasService {
     @Transactional
     public CitaEntity createCitaEntity(CreateCitaRequest citaRequest){
         // Validar y obtener paciente
-        PacienteEntity paciente = pacienteService.getPacienteById(citaRequest.idPaciente());
+        PacienteEntity paciente = pacienteService.getPacienteEnityById(citaRequest.idPaciente());
         
         // Validar y obtener disponibilidad
         DisponibilidadEntity disponibilidad = disponibilidadService.getDisponibilidadById(citaRequest.idDisponibilidad()); 
@@ -89,7 +89,7 @@ public class CitasService {
 
     public List<CitaEntity> getCitasByPaciente(Long idPaciente){
         // Validar y obtener paciente
-        PacienteEntity paciente = pacienteService.getPacienteById(idPaciente);
+        PacienteEntity paciente = pacienteService.getPacienteEnityById(idPaciente);
 
         // Obtener citas por paciente
         return citasRepository.findByPaciente(paciente);

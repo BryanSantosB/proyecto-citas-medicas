@@ -2,10 +2,6 @@ package com.citasmedicas.spring.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDate;
-
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name = "pacientes")
@@ -23,23 +19,23 @@ public class PacienteEntity {
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", unique = true)
     private UserEntity usuario;
 
-    private String nombres;
-    private String apellidos;
+    // private String nombres;
+    // private String apellidos;
 
-    @Column(unique = true, nullable = false, name = "correo_electronico")
-    private String correoElectronico;
+    // @Column(unique = true, nullable = false, name = "correo_electronico")
+    // private String correoElectronico;
 
-    @Column(nullable = false, name = "fecha_nacimiento")
-    @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDate fechaNacimiento;
+    // @Column(nullable = false, name = "fecha_nacimiento")
+    // @JsonFormat(pattern = "dd-MM-yyyy")
+    // private LocalDate fechaNacimiento;
 
-    @Column(nullable = false)
-    private String genero; 
+    // @Column(nullable = false)
+    // private String genero; 
 
-    @Column(name = "telefono_contacto", nullable = false)
-    private String telefonoContacto;
+    // @Column(name = "telefono_contacto", nullable = false)
+    // private String telefonoContacto;
 
-    private String direccion;
+    // private String direccion;
 
     @Column(name = "grupo_sanguineo")
     private String grupoSanguineo;
