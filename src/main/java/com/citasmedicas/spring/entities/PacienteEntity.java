@@ -1,5 +1,7 @@
 package com.citasmedicas.spring.entities;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,24 +21,6 @@ public class PacienteEntity {
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", unique = true)
     private UserEntity usuario;
 
-    // private String nombres;
-    // private String apellidos;
-
-    // @Column(unique = true, nullable = false, name = "correo_electronico")
-    // private String correoElectronico;
-
-    // @Column(nullable = false, name = "fecha_nacimiento")
-    // @JsonFormat(pattern = "dd-MM-yyyy")
-    // private LocalDate fechaNacimiento;
-
-    // @Column(nullable = false)
-    // private String genero; 
-
-    // @Column(name = "telefono_contacto", nullable = false)
-    // private String telefonoContacto;
-
-    // private String direccion;
-
     @Column(name = "grupo_sanguineo")
     private String grupoSanguineo;
 
@@ -50,5 +34,9 @@ public class PacienteEntity {
 
     @Column(length = 500, name = "informacion_adicional")
     private String informacionAdicional;
+
+    @OneToMany(mappedBy = "paciente")
+    private List  <SeguroMedicoEntity> segurosMedicos;
+
 
 }

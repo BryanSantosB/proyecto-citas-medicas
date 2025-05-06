@@ -7,5 +7,7 @@ public record AuthCreatePacienteDetailsRequest(
     @NotBlank String alergias,
     @NotBlank String enfermedadesCronicas,
     @NotBlank String numeroHistoriaClinica,
-    @NotBlank String informacionAdicional
+    @NotBlank String informacionAdicional,
+    @NotBlank String seguroMedico,
+    @NotBlank String numeroPoliza
 ) {}

@@ -72,8 +72,8 @@ public class CitaEntity {
     @Builder.Default
     private Boolean usaSeguro = false;
     
-    @Column(name = "datos_seguro", length = 255)
-    private String datosSeguro;
+    @Column(name = "autorizacion_seguro")
+    private String autorizacionSeguro;
     
     // --- Información de seguimiento ---
     @Column(name = "requiere_seguimiento")
