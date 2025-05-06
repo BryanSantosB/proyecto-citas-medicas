@@ -5,12 +5,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.citasmedicas.spring.entities.EspecialidadEntity;
+import com.citasmedicas.spring.entities.EspecialidadEnum;
 import com.citasmedicas.spring.entities.GeneroEnum;
 import com.citasmedicas.spring.entities.PermissionEntity;
 import com.citasmedicas.spring.entities.RoleEntity;
 import com.citasmedicas.spring.entities.RoleEnum;
 import com.citasmedicas.spring.entities.UserEntity;
 import com.citasmedicas.spring.repository.DisponibilidadRepository;
+import com.citasmedicas.spring.repository.EspecialidadRepository;
 import com.citasmedicas.spring.repository.PermisosRepository;
 import com.citasmedicas.spring.repository.RoleRepository;
 import com.citasmedicas.spring.repository.UserRepository;
@@ -27,7 +30,8 @@ public class DataInitializer {
                            RoleRepository roleRepository,
                            PermisosRepository permissionRepository,
                            PasswordEncoder passwordEncoder,
-                           DisponibilidadRepository disponibilidadRepository) {
+                           DisponibilidadRepository disponibilidadRepository,
+                           EspecialidadRepository especialidadRepository ) {
         return args -> {
 
             // Crear permisos si no existen
@@ -41,6 +45,18 @@ public class DataInitializer {
             RoleEntity userRole = createRoleIfNotExists(roleRepository, RoleEnum.USER, Set.of(createPermission, readPermission));
             RoleEntity doctorRole = createRoleIfNotExists(roleRepository, RoleEnum.DOCTOR, Set.of(createPermission, readPermission, updatePermission));
             createRoleIfNotExists(roleRepository, RoleEnum.PACIENTE, Set.of(createPermission, readPermission));
+
+            // Crear especialidades si no existen
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.CARDIOLOGIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.DERMATOLOGIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.ENDOCRINOLOGIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.GINECOLOGIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.NEUROLOGIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.OFTALMOLOGIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.PEDIATRIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.PSIQUIATRIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.TRAUMATOLOGIA);
+            createEspecialidadIfNotExists(especialidadRepository, EspecialidadEnum.MEDICINA_GENERAL);
 
             // Crear usuarios base
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -63,11 +79,21 @@ public class DataInitializer {
 
     private PermissionEntity createPermisionIfNotExists(PermisosRepository repo, String name) {
         return repo.findByName(name)
-                .orElseGet(() -> {
+                .orElseGet(() -> { 
                     PermissionEntity permission = PermissionEntity.builder()
                             .name(name)
                             .build();
                     return repo.save(permission);
+                });
+    }
+
+    private EspecialidadEntity createEspecialidadIfNotExists(EspecialidadRepository repo, EspecialidadEnum especialidad) {
+        return repo.findByEspecialidad(especialidad)
+                .orElseGet(() -> {
+                    EspecialidadEntity especialidadEnitity = EspecialidadEntity.builder()
+                            .especialidad(especialidad)
+                            .build();
+                    return repo.save(especialidadEnitity);
                 });
     }
 

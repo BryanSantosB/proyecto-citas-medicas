@@ -40,7 +40,7 @@ public class DisponibilidadService {
     public DisponibilidadEntity createDisponibilidad (CreateDisponibilidadRequest disponibilidadDetails){
 
         // Obtener y verificar doctor
-        DoctorEntity doctorEntity = doctorService.getDoctorById(disponibilidadDetails.idDoctor());
+        DoctorEntity doctorEntity = doctorService.getDoctorEntityById(disponibilidadDetails.idDoctor());
 
         // Crear disponibilidad
         DisponibilidadEntity disponibilidadEntity = DisponibilidadEntity.builder()

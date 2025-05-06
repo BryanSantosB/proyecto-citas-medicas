@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.citasmedicas.spring.dto.AuthCreateDoctorDetailsRequest;
 import com.citasmedicas.spring.dto.AuthCreateDoctorRequest;
 import com.citasmedicas.spring.dto.AuthResponse;
-import com.citasmedicas.spring.entities.DoctorEntity;
+import com.citasmedicas.spring.dto.DoctorDTO;
 import com.citasmedicas.spring.services.DoctorService;
 
 import jakarta.validation.Valid;
@@ -40,21 +39,21 @@ public class DoctorController {
     // Obtener todos los doctores
     @GetMapping("/getdoctores")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<DoctorEntity>> getAllDoctors(){
+    public ResponseEntity<List<DoctorDTO>> getAllDoctors(){
         return new ResponseEntity<>(doctorService.getAllDoctores(), HttpStatus.OK);
     }
 
     // Obtener doctor por ID
     @GetMapping("/getdoctor/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DoctorEntity> getDoctorById(@PathVariable Long id){
-        return new ResponseEntity<>(doctorService.getDoctorById(id), HttpStatus.OK);
+    public ResponseEntity<DoctorDTO> getDoctorById(@PathVariable Long id){
+        return new ResponseEntity<>(doctorService.getDoctorDtoById(id), HttpStatus.OK);
     }
 
     // Actualizar doctor
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<DoctorEntity> updateDoctor(@PathVariable Long id, @RequestBody @Valid AuthCreateDoctorDetailsRequest doctorRequest){
+    public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @RequestBody @Valid AuthCreateDoctorRequest doctorRequest){
         return new ResponseEntity<>(doctorService.updateDoctor(id, doctorRequest), HttpStatus.OK);
     }
 

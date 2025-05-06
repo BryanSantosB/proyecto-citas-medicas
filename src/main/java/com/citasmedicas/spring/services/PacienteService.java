@@ -82,6 +82,7 @@ public class PacienteService {
         PacienteEntity pacienteEntity = pacienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente con id " + id + " no encontrado."));
 
+        // Actualizar los datos del usuario
         userDetailServiceImpl.updateUsuario(pacienteEntity.getUsuario().getId(), pacienteRequest.userRequest());
         
         // Actualizar los datos del paciente 

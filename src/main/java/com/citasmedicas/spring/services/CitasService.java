@@ -97,7 +97,7 @@ public class CitasService {
 
     public List<CitaEntity> getCitasByDoctor(Long idDoctor){
         // Validar y obtener doctor
-        DoctorEntity doctor = doctorService.getDoctorById(idDoctor);
+        DoctorEntity doctor = doctorService.getDoctorEntityById(idDoctor);
 
         // Obtener citas por doctor
         return citasRepository.findByDoctorId(doctor.getId());
