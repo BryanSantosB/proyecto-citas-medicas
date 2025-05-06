@@ -43,7 +43,7 @@ public class CitasService {
         PacienteEntity paciente = pacienteService.getPacienteEnityById(citaRequest.idPaciente());
         
         // Validar y obtener disponibilidad
-        DisponibilidadEntity disponibilidad = disponibilidadService.getDisponibilidadById(citaRequest.idDisponibilidad()); 
+        DisponibilidadEntity disponibilidad = disponibilidadService.getDisponibilidadEntityById(citaRequest.idDisponibilidad()); 
 
         // Crear cita
         CitaEntity citaEntity = CitaEntity.builder()

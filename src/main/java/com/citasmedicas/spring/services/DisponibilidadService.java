@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.citasmedicas.spring.dto.CreateDisponibilidadRequest;
+import com.citasmedicas.spring.dto.DisponibilidadDTO;
+import com.citasmedicas.spring.dto.mappers.DisponibilidadMapper;
 import com.citasmedicas.spring.entities.DisponibilidadEntity;
 import com.citasmedicas.spring.entities.DoctorEntity;
 import com.citasmedicas.spring.entities.EstadoDisponibilidadEnum;
@@ -25,19 +27,30 @@ public class DisponibilidadService {
     private DisponibilidadRepository disponibilidadRepository;
 
     @Autowired
+    private DisponibilidadMapper disponibilidadMapper;
+
+    @Autowired
     private DoctorService doctorService;
 
-    public List<DisponibilidadEntity> getAllDisponibilidad(){
-        return disponibilidadRepository.findAll();
+    public List<DisponibilidadDTO> getAllDisponibilidad(){
+        return disponibilidadRepository.findAll().stream()
+                .map(disponibilidadMapper::toDisponibilidadDTO)
+                .toList();
     }
 
-    public DisponibilidadEntity getDisponibilidadById (Long id){
+    public DisponibilidadEntity getDisponibilidadEntityById (Long id){
         return disponibilidadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Disponibilidad no encontrada"));
     }
 
+    public DisponibilidadDTO getDisponibilidadDtoById (Long id){
+        DisponibilidadEntity disponibilidadEntity = disponibilidadRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Disponibilidad no encontrada"));
+        return disponibilidadMapper.toDisponibilidadDTO(disponibilidadEntity);
+    }
+
     @Transactional
-    public DisponibilidadEntity createDisponibilidad (CreateDisponibilidadRequest disponibilidadDetails){
+    public DisponibilidadDTO createDisponibilidad (CreateDisponibilidadRequest disponibilidadDetails){
 
         // Obtener y verificar doctor
         DoctorEntity doctorEntity = doctorService.getDoctorEntityById(disponibilidadDetails.idDoctor());
@@ -53,14 +66,13 @@ public class DisponibilidadService {
         // Verificar existencia del doctor en el horario proporcionado
         verificarSolapamientoHorario(disponibilidadEntity);
 
-        return disponibilidadRepository.save(disponibilidadEntity);
+        return disponibilidadMapper.toDisponibilidadDTO(disponibilidadRepository.save(disponibilidadEntity));
     }
 
     @Transactional
-    public DisponibilidadEntity updateDisponibilidad(Long id, EstadoDisponibilidadEnum nuevoEstado){
+    public DisponibilidadDTO updateDisponibilidad(Long id, EstadoDisponibilidadEnum nuevoEstado){
         // Obtener disponibilidad existente
-        DisponibilidadEntity disponibilidadEntity = disponibilidadRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Disponibilidad con id " + id + " no encontrada"));
+        DisponibilidadEntity disponibilidadEntity = getDisponibilidadEntityById(id);
 
         // Verificar que el cambio sea válido
         validarCambioEstado(disponibilidadEntity, nuevoEstado);
@@ -69,7 +81,7 @@ public class DisponibilidadService {
         disponibilidadEntity.setEstado(nuevoEstado);
 
         // Guardar diponibilidad
-        return disponibilidadRepository.save(disponibilidadEntity);
+        return disponibilidadMapper.toDisponibilidadDTO(disponibilidadRepository.save(disponibilidadEntity));
     }
 
     @Transactional
@@ -83,9 +95,10 @@ public class DisponibilidadService {
         return "Disponibilidad con id " + id + " cancelada correctamente";
     }
 
-    public List<DisponibilidadEntity> getDisponibilidadByFecha(@JsonFormat(pattern = "dd-MM-yyyy") LocalDate fecha){
+    public List<DisponibilidadDTO> getDisponibilidadByFecha(@JsonFormat(pattern = "dd-MM-yyyy") LocalDate fecha){
         return disponibilidadRepository.findByFecha(fecha).stream()
                 .filter(disponibilidad -> disponibilidad.getEstado().equals(EstadoDisponibilidadEnum.DISPONIBLE))
+                .map(disponibilidadMapper::toDisponibilidadDTO)
                 .collect(Collectors.toList());
     }
 
