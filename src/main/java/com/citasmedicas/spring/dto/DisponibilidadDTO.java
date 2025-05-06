@@ -13,5 +13,6 @@ public record DisponibilidadDTO(
     @NotNull LocalDate fecha,
     @NotNull LocalTime horaInicio,
     @NotNull LocalTime horaFin,
+    @NotNull Integer duracionConsultaMinutos,
     @NotNull EstadoDisponibilidadEnum estado
 ) {}

@@ -1,5 +1,6 @@
 package com.citasmedicas.spring.services;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -55,13 +56,11 @@ public class DisponibilidadService {
         // Obtener y verificar doctor
         DoctorEntity doctorEntity = doctorService.getDoctorEntityById(disponibilidadDetails.idDoctor());
 
+        // Calcular duración en minutos
+        int duracionMinutos = calcularDuracionEnMinutos(disponibilidadDetails.horaInicio(), disponibilidadDetails.horaFin());
+
         // Crear disponibilidad
-        DisponibilidadEntity disponibilidadEntity = DisponibilidadEntity.builder()
-                .doctor(doctorEntity)
-                .fecha(disponibilidadDetails.fecha())
-                .horaInicio(disponibilidadDetails.horaInicio())
-                .horaFin(disponibilidadDetails.horaFin())
-                .build();
+        DisponibilidadEntity disponibilidadEntity = crearDisponibilidadEntity(doctorEntity, disponibilidadDetails, duracionMinutos);
 
         // Verificar existencia del doctor en el horario proporcionado
         verificarSolapamientoHorario(disponibilidadEntity);
@@ -181,6 +180,25 @@ public class DisponibilidadService {
                 throw new BadRequestException("No se puede reservar directamente una disponibilidad cancelada");
             }
         }
+    }
+
+    public int calcularDuracionEnMinutos(LocalTime horaInicio, LocalTime horaFin) {
+        if (horaInicio.isAfter(horaFin)) {
+            throw new BadRequestException("La hora de inicio debe ser anterior a la hora de fin");
+        }
+        
+        // Cálculo de la duración en minutos
+        return (int) Duration.between(horaInicio, horaFin).toMinutes();
+    }
+
+    public DisponibilidadEntity crearDisponibilidadEntity(DoctorEntity doctorEntity, CreateDisponibilidadRequest disponibilidadDetails, int duracionMinutos) {
+        return DisponibilidadEntity.builder()
+                .doctor(doctorEntity)
+                .fecha(disponibilidadDetails.fecha())
+                .horaInicio(disponibilidadDetails.horaInicio())
+                .horaFin(disponibilidadDetails.horaFin())
+                .duracionConsultaMinutos(duracionMinutos)
+                .build();
     }
 }
 

@@ -5,6 +5,7 @@ import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -43,6 +44,9 @@ public class DisponibilidadEntity {
     
     @JsonFormat(pattern = "HH:mm")
     private LocalTime horaFin;
+
+    @Column(name = "duracion_consulta_min")
+    private Integer duracionConsultaMinutos;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

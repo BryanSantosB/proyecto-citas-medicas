@@ -1,5 +1,9 @@
 package com.citasmedicas.spring.entities;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -40,5 +44,56 @@ public class CitaEntity {
 
     private String motivo;
     private String observaciones;
+    
+    // --- Información clínica ---
+    @Column(length = 500)
+    private String diagnostico;
+    
+    @Column(name = "sintomas_reportados", length = 1000)
+    private String sintomasReportados;
+    
+    @Column(name = "indicaciones_post_consulta", length = 1000)
+    private String indicacionesPostConsulta;
+    
+    // --- Información administrativa ---
+    @Enumerated(EnumType.STRING)
+    @Column(name = "metodo_pago")
+    private MetodoPagoEnum metodoPago;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_pago")
+    @Builder.Default
+    private EstadoPagoEnum estadoPago = EstadoPagoEnum.PENDIENTE;
+    
+    @Column(name = "monto_cobrado", precision = 10, scale = 2)
+    private BigDecimal montoCobrado;
+    
+    @Column(name = "usa_seguro")
+    @Builder.Default
+    private Boolean usaSeguro = false;
+    
+    @Column(name = "datos_seguro", length = 255)
+    private String datosSeguro;
+    
+    // --- Información de seguimiento ---
+    @Column(name = "requiere_seguimiento")
+    @Builder.Default
+    private Boolean requiereSeguimiento = false;
+    
+    @Column(name = "fecha_proxima_cita")
+    private LocalDate fechaProximaCita;
+    
+    // --- Información de control ---
+    @Column(name = "paciente_asistio")
+    private Boolean pacienteAsistio;
+    
+    @Column(name = "calificacion_paciente")
+    private Integer calificacionPaciente; // 1-5 estrellas
+    
+    @Column(name = "comentario_paciente", length = 500)
+    private String comentarioPaciente;
+    
+    @Column(name = "duracion_real_minutos")
+    private Integer duracionRealMinutos;
 
 }
