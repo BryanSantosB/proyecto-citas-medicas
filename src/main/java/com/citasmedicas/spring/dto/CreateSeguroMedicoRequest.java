@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateSeguroMedicoRequest(
-    @NotNull Long idPaciente,
+    Long idPaciente,
     @NotBlank String compania,
     @NotBlank String numeroPoliza,
     @NotNull @JsonFormat(pattern = "dd-MM-yyyy") LocalDate fechaVencimiento,

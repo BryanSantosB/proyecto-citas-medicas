@@ -64,10 +64,4 @@ public class SeguroMedicoController {
         return new ResponseEntity<>(seguroMedicoService.deleteSeguroMedico(id), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PACIENTE') or hasRole('DOCTOR')")
-    @PutMapping("/{id}/marcar-principal")
-    public ResponseEntity<String> updateSeguroPrincipal(@PathVariable Long id) {
-        return new ResponseEntity<>(seguroMedicoService.updateEstadoSeguroPrincipal(id), HttpStatus.OK);
-    }
-
 }

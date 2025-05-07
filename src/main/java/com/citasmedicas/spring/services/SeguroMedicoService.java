@@ -2,6 +2,7 @@ package com.citasmedicas.spring.services;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,11 @@ public class SeguroMedicoService {
         // Validar y obtener paciente
         PacienteEntity paciente = pacienteService.getPacienteEnityById(seguroMedicoRequest.idPaciente());
 
+        // Validar si es principal
+        if(seguroMedicoRequest.esPrincipal()){
+            desactivarPrincipalSeguroMedico(getSegurosMedicoEntityByPaciente(paciente.getId()));
+        }
+
         // Validar fecha de vencimiento
         validarFechaVencimiento(seguroMedicoRequest.fechaVencimiento());
 
@@ -78,6 +84,9 @@ public class SeguroMedicoService {
 
         // Validar y obtener seguro médico
         SeguroMedicoEntity seguroMedicoEntity = getSeguroMedicoEntityById(id);
+
+        // Validar que no sea el principal actualmente
+        validarPrincipal(seguroMedicoEntity, seguroMedicoRequest);
 
         // Validar fecha de vencimiento
         validarFechaVencimiento(seguroMedicoRequest.fechaVencimiento());
@@ -104,32 +113,16 @@ public class SeguroMedicoService {
     }
 
     @Transactional
-    public String updateEstadoSeguroPrincipal(Long id){
-        // Validar y obtener seguro medico
-        SeguroMedicoEntity seguroMedicoEntity = getSeguroMedicoEntityById(id);
-
-        // Validar que no sea el principal actualmente
-        validarPrincipal(seguroMedicoEntity.getEsPrincipal());
+    public void updateEstadoSeguroPrincipal(SeguroMedicoEntity seguroMedicoEntity){
 
         // Obtener seguros médicos por paciente
         List<SeguroMedicoEntity> segurosMedicos = getSegurosMedicoEntityByPaciente(seguroMedicoEntity.getPaciente().getId());
 
-        // Actualizar estado de seguros medicos
-        List<SeguroMedicoEntity> seguroMedicoEntities = segurosMedicos.stream()
-                .map(seguroMedico -> {
-                    if(seguroMedico.getId() == seguroMedicoEntity.getId()){
-                        seguroMedico.setEsPrincipal(true);
-                    } else {
-                        seguroMedico.setEsPrincipal(false);
-                    }
-                    return seguroMedico;
-                })
-                .toList();
+        // Desactivar el pricipal existente
+        desactivarPrincipalSeguroMedico(segurosMedicos);
 
-        // Actualizar seguros medicos
-        seguroMedicoRepository.saveAll(seguroMedicoEntities);
-
-        return "El seguro medico con id " + id + " ahora es el principal.";
+        // Actualizar el principal
+        seguroMedicoEntity.setEsPrincipal(true);
     }
 
     public void validarFechaVencimiento(LocalDate fechaVencimiento) {
@@ -152,7 +145,6 @@ public class SeguroMedicoService {
         seguroMedicoEntity.setCompania(seguroMedicoRequest.compania());
         seguroMedicoEntity.setNumeroPoliza(seguroMedicoRequest.numeroPoliza());
         seguroMedicoEntity.setFechaVencimiento(seguroMedicoRequest.fechaVencimiento());
-        seguroMedicoEntity.setEsPrincipal(seguroMedicoRequest.esPrincipal());
     }
 
     public void validarEstadoSeguro(EstadoSeguro estadoSeguro){
@@ -161,9 +153,21 @@ public class SeguroMedicoService {
         }
     }
 
-    public void validarPrincipal(boolean esPrincipal){
-        if(esPrincipal){
-            throw new BadRequestException("El seguro medico ya es el principal.");
+    public void validarPrincipal(SeguroMedicoEntity seguroMedicoEntity, CreateSeguroMedicoRequest seguroMedicoRequest){
+        if(!seguroMedicoEntity.getEsPrincipal() && seguroMedicoRequest.esPrincipal()){
+            updateEstadoSeguroPrincipal(seguroMedicoEntity);
         }
     }
+
+    public void desactivarPrincipalSeguroMedico(List<SeguroMedicoEntity> seguroMedicoEntities){
+        Optional<SeguroMedicoEntity> seguro = seguroMedicoEntities.stream()
+                .filter(seguroMedico -> seguroMedico.getEsPrincipal())
+                .findFirst();
+
+        seguro.ifPresent(seguroMedico -> {
+            seguroMedico.setEsPrincipal(false);
+            seguroMedicoRepository.save(seguroMedico);
+        });
+    }
+
 }
